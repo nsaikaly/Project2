@@ -17,11 +17,64 @@ namespace Cecs475.BoardGames.Chess.View
     /// <summary>
     /// Interaction logic for PawnPromotionWindow.xaml
     /// </summary>
-    public partial class PawnPromotionWindow : Window
-    {
-        public PawnPromotionWindow()
-        {
+    public partial class PawnPromotionWindow : Window {
+        public static SolidColorBrush RED_BRUSH = new SolidColorBrush(Colors.Red);
+        public static SolidColorBrush GREEN_BRUSH = new SolidColorBrush(Colors.Green);
+        public static SolidColorBrush BLUE_BRUSH = new SolidColorBrush(Colors.Blue);
+
+        public PawnPromotionWindow(ChessViewModel ViewModel) {
+
+            //use current viewmodel in here
+            //have two stackpanels
+            //one for white player and one for black player
+            //based on whose turn it is from the viewmodel, display only one stackpanel in the window with the hardcoded 4 moves
             InitializeComponent();
+            //var player = ViewModel.CurrentPlayer;
+            //ChessPieceConverter converter = new ChessPieceConverter();
+            //var moves = ViewModel.GetPromotionSquares();
+            //var panel = FindResource("Panel") as StackPanel;
+            //var source = new Binding("Piece") { Converter = new ChessPieceConverter() };
+
+            //var binding = new Binding("Piece");
+            //binding.Converter = new ChessPieceConverter();
+
+
+
+            //Image Img = new Image();
+            //Img.Source = new BitmapImage(new Uri("/Cecs475.BoardGames.Chess.View;component/Resources/" + "white" + "rook.png"));
+            //< Image Source = "{Binding Piece, Converter={StaticResource PieceImage}}" />
+            //for (var i = 0; i < 5; i++) {
+
+
+            //    var converted = (BitmapImage)(converter.Convert(moves[i].Piece, null, null, null));
+            //    PromotionPanel.Children.Add(converted);
+            //}
+
+
+            //DataContext = ViewModel;
+
         }
+
+
+        private void Border_MouseUp(object sender, MouseButtonEventArgs e) {
+            Border b = sender as Border;
+            var square = b.DataContext as ChessSquare;
+            var vm = FindResource("vm") as ChessViewModel;
+            b.Background = RED_BRUSH;
+        }
+
+        private void Border_MouseEnter(object sender, MouseEventArgs e) {
+            Border b = sender as Border;
+            var square = b.DataContext as ChessSquare;
+            var vm = FindResource("vm") as ChessViewModel;
+            b.Background = GREEN_BRUSH;
+        }
+
+        private void Border_MouseLeave(object sender, MouseEventArgs e) {
+            Border b = sender as Border;
+            b.Background = BLUE_BRUSH;
+        }
+
+
     }
 }

@@ -13,28 +13,28 @@ namespace Cecs475.BoardGames.Chess.View
 {
     public class ChessSquareColorConverter : IMultiValueConverter
     {
-        private static SolidColorBrush solidColorBrush_0 = new SolidColorBrush(Colors.Black);
-        private static SolidColorBrush solidColorBrush_1 = new SolidColorBrush(Colors.Red);
-        private static SolidColorBrush solidColorBrush_2 = new SolidColorBrush(Colors.White);
-        private static SolidColorBrush solidColorBrush_3 = new SolidColorBrush(Colors.Yellow);
-        private static SolidColorBrush solidColorBrush_4 = new SolidColorBrush(Colors.LightGreen);
+        private static SolidColorBrush Black = new SolidColorBrush(Colors.Black);
+        private static SolidColorBrush Red = new SolidColorBrush(Colors.Red);
+        private static SolidColorBrush White = new SolidColorBrush(Colors.White);
+        private static SolidColorBrush Yellow = new SolidColorBrush(Colors.Yellow);
+        private static SolidColorBrush LightGreen = new SolidColorBrush(Colors.LightGreen);
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             BoardPosition boardPosition = (BoardPosition)values[1];
             ChessPiecePosition chessPiecePosition = (ChessPiecePosition)values[0];
             ChessViewModel chessViewModel = (ChessViewModel)values[2];
-            int isSelected = (bool)values[3] ? 1 : 0;
+            bool isSelected = (bool)values[3];
             bool isHovered = (bool)values[4];
-            if (isSelected != 0)
-                return solidColorBrush_1;
+            if (isSelected)
+                return Red;
             if (isHovered)
-                return solidColorBrush_1;
-            //if (chessViewModel.IsCheck && chessPiecePosition.PieceType == ChessPieceType.King && chessPiecePosition.Player == chessViewModel.CurrentPlayer)
-               // return (object)ChessSquareColorConverter.solidColorBrush_3;
+                return Red;
+            if (chessViewModel.IsCheck && chessPiecePosition.PieceType == ChessPieceType.King && chessPiecePosition.Player == chessViewModel.CurrentPlayer)
+                return (object)ChessSquareColorConverter.Yellow;
             if ((boardPosition.Row + boardPosition.Col) % 2 != 0)
-                return solidColorBrush_2;
-            return solidColorBrush_0;
+                return White;
+            return Black;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

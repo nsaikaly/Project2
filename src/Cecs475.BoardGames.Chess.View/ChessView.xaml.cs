@@ -123,8 +123,9 @@ namespace Cecs475.BoardGames.Chess.View {
 
                     if (/*MOVE.Piece.PieceType == ChessPieceType.Pawn && */(MOVE.EndPosition.Row == 0 || MOVE.EndPosition.Row == 7))
                     {
-                        PawnPromotionWindow subWin = new PawnPromotionWindow();
+                        PawnPromotionWindow subWin = new PawnPromotionWindow(vm);
                         subWin.Show();
+                        //subWin.Close();
 
                     }
 

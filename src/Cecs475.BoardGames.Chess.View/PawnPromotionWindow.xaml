@@ -11,27 +11,34 @@
         ShowInTaskbar="false" 
         WindowStartupLocation="CenterOwner">
 
-    <FrameworkElement.Resources>
+    <Window.Resources>
         <local:ChessViewModel x:Key="vm"/>
         <local:ChessPieceConverter x:Key="PieceImage"/>
-    </FrameworkElement.Resources>
+        <StackPanel x:Key="Panel"/>
+    </Window.Resources>
+
+    
+
 
     <StackPanel>
         <Label FontSize="12">Promote pawn to:</Label>
-        <ItemsControl x:Name="BoardPositions" DataContext="{StaticResource vm}"
+        <ItemsControl x:Name="BoardPositions" DataContext="ViewModel"
                   ItemsSource="{Binding PromotionMoves}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
+            
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border Background="MediumSeaGreen" Height="60">
+                    <Border Background="Blue" Height="50"
+                        MouseEnter="Border_MouseEnter" MouseLeave="Border_MouseLeave"
+                        MouseUp="Border_MouseUp">
                         <Image Source="{Binding Piece, Converter={StaticResource PieceImage}}"/>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <!--<Grid>
+            <StackPanel Name="PromotionPanel" />
+        </Grid>-->
+
+
     </StackPanel>
 </Window>

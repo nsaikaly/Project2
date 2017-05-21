@@ -8,8 +8,15 @@ using System;
 
 namespace Cecs475.BoardGames.Chess.View {
     public class ChessSquare : INotifyPropertyChanged {
-        public ChessViewModel ViewModel { get; set; }
+
+
+        private ChessPiecePosition mPiece;
         private int mPlayer;
+        private bool mIsHovered;
+        private bool mIsSelected;
+
+        public ChessViewModel ViewModel { get; set; }
+        
         public int CurrentPlayer {
             get { return mPlayer; }
             set {
@@ -20,7 +27,6 @@ namespace Cecs475.BoardGames.Chess.View {
             }
         }
 
-        private bool mIsHovered;
         public bool IsHovered {
             get { return mIsHovered; }
             set {
@@ -31,7 +37,6 @@ namespace Cecs475.BoardGames.Chess.View {
             }
         }
 
-        private bool mIsSelected;
         public bool IsSelected
         {
             get { return mIsSelected; }
@@ -45,7 +50,6 @@ namespace Cecs475.BoardGames.Chess.View {
             }
         }
 
-        private ChessPiecePosition mPiece;
         public ChessPiecePosition Piece
         {
             get { return mPiece; }
@@ -91,14 +95,27 @@ namespace Cecs475.BoardGames.Chess.View {
                     from c in Enumerable.Range(0, 8)
                     select new BoardPosition(r, c)
                 )
-                select new ChessSquare()
-                {
+                select new ChessSquare() {
                     Position = pos,
                     CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player,
                     Piece = mBoard.GetPieceAtPosition(pos),
-                    //ViewModel = ChessViewModel
+                    ViewModel = this
                 }
             );
+
+            mPromotionMoves = new ObservableCollection<ChessSquare>(
+                   from pos in (
+                       from r in Enumerable.Range(0, 8)
+                       from c in Enumerable.Range(0, 8)
+                       select new BoardPosition(r, c)
+                   )
+                   select new ChessSquare() {
+                       Position = pos,
+                       CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player,
+                       Piece = mBoard.GetPieceAtPosition(pos),
+                       ViewModel = this
+                   }
+               );
 
             PossibleMoves = new HashSet<ChessMove>(
                 from ChessMove m in mBoard.GetPossibleMoves()
@@ -109,8 +126,7 @@ namespace Cecs475.BoardGames.Chess.View {
         public void UndoMove()
         {
             if(CanUndo)
-            {
-                //var move = mBoard.MoveHistory.Last();
+            {                
                 mBoard.UndoLastMove();
 
                 PossibleMoves = new HashSet<ChessMove>(
@@ -157,26 +173,54 @@ namespace Cecs475.BoardGames.Chess.View {
                     }                 
                 }
 
-                //ChessMove promotionMove = (ChessMove)mBoard.MoveHistory.Last();
+                possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
 
-                //if (promotionMove.Piece.PieceType == ChessPieceType.Pawn && (promotionMove.EndPosition.Row == 0 || promotionMove.EndPosition.Row == 7))
-                //{
-                //    IsPawnPromotion = true;
-                //    mPromotionMoves = new ObservableCollection<ChessSquare>(
-                //    from pos in (
-                //        from r in PossibleMoves
-                //        select new BoardPosition(r.StartPosition.Row, r.StartPosition.Col)
-                //    )
-                //    select new ChessSquare()
-                //    {
-                //        Position = pos,
-                //        CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player,
-                //        Piece = mBoard.GetPieceAtPosition(pos),
-                //            //ViewModel = ChessViewModel
-                //        }
-                //    );
+                ChessMove promotionMove = (ChessMove)mBoard.MoveHistory.Last();
 
-                //}
+                if (promotionMove.Piece.PieceType == ChessPieceType.Pawn && (promotionMove.EndPosition.Row == 0 || promotionMove.EndPosition.Row == 7)) {
+                    IsPawnPromotion = true;
+
+
+                    //mPromotionMoves = new ObservableCollection<ChessSquare>(
+                    //from pos in (
+                    //    from r in PossibleMoves
+                    //    select new BoardPosition(r.StartPosition.Row, r.StartPosition.Col)
+                    //)
+                    //select new ChessSquare() {
+                    //    Position = pos,
+                    //    CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player,
+                    //    Piece = mBoard.GetPieceAtPosition(pos),
+                    //    //ViewModel = ChessViewModel
+                    //}
+                    //);
+
+
+                    possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
+
+                    List<ChessPiecePosition> pawnMoves = new List<ChessPiecePosition>();
+                    var queen = new ChessPiecePosition(ChessPieceType.Queen, CurrentPlayer);
+                    var knight = new ChessPiecePosition(ChessPieceType.Knight, CurrentPlayer);
+                    var rookPawn = new ChessPiecePosition(ChessPieceType.RookPawn, CurrentPlayer);
+                    var bioshop = new ChessPiecePosition(ChessPieceType.Bishop, CurrentPlayer);
+                    pawnMoves.Add(queen);
+                    pawnMoves.Add(knight);
+                    pawnMoves.Add(rookPawn);
+                    pawnMoves.Add(bioshop);
+
+                    var newPromotion =
+                             from r in possMoves
+                             select new BoardPosition(r.StartPosition.Row, r.StartPosition.Col);
+                    int j = 0;
+                    foreach (var pos in newPromotion) {
+                        mPromotionMoves[j].CurrentPlayer = CurrentPlayer;
+                        mPromotionMoves[j].Piece = pawnMoves[j];
+                        mPromotionMoves[j].IsSelected = false;
+                        j++;
+                    }
+
+
+
+                }
 
                 PossibleMoves = new HashSet<ChessMove>(
                     from ChessMove m in mBoard.GetPossibleMoves()
@@ -202,96 +246,32 @@ namespace Cecs475.BoardGames.Chess.View {
             OnPropertyChanged(nameof(IsPawnPromotion));
         }
 
-        //public ChessViewModel()
-        //{
-        //    mBoard = new ChessBoard();
-        //    mPromotionMoves = new ObservableCollection<ChessSquare>();
-        //    PossibleMoves = new HashSet<BoardPosition>(mBoard.GetPossibleMoves().Cast<ChessMove>().Select<ChessMove, BoardPosition>((Func<ChessMove, BoardPosition>)(chessMove_0 => chessMove_0.StartPosition)));
-        //    IEnumerable<int> source = Enumerable.Range(0, 8);
-        //    Func<int, IEnumerable<int>> func = (Func<int, IEnumerable<int>>)(int_0 => Enumerable.Range(0, 8));
-        //    Func<int, IEnumerable<int>> collectionSelector;
-        //    mSquares = new ObservableCollection<ChessSquare>(source.SelectMany<int, int, BoardPosition>(collectionSelector, (Func<int, int, BoardPosition>)((int_0, int_1) => new BoardPosition(int_0, int_1))).Select<BoardPosition, ChessSquare>((Func<BoardPosition, ChessSquare>)(boardPosition_0 =>
-        //    {
-        //        ChessSquare chessSquare = new ChessSquare();
-        //        chessSquare.Position = boardPosition_0;
-        //        ChessPiecePosition pieceAtPosition = mBoard.GetPieceAtPosition(boardPosition_0);
-        //        chessSquare.Piece = pieceAtPosition;
-        //        chessSquare.ViewModel = this;
-        //        return chessSquare;
-        //    })));
-        //}
+        public List<ChessSquare> GetPromotionSquares() {
+            ChessSquare queen = new ChessSquare();
+            ChessSquare rook = new ChessSquare();
+            ChessSquare knight = new ChessSquare();
+            ChessSquare bishop = new ChessSquare();
+            queen.Piece = new ChessPiecePosition(ChessPieceType.Queen, CurrentPlayer);
+            rook.Piece = new ChessPiecePosition(ChessPieceType.RookPawn, CurrentPlayer);
+            knight.Piece = new ChessPiecePosition(ChessPieceType.Knight, CurrentPlayer);
+            bishop.Piece = new ChessPiecePosition(ChessPieceType.Bishop, CurrentPlayer);
 
-        //public void UndoMove()
-        //{
-        //    if (mBoard.MoveHistory.Count > 0 && ((ChessMove)mBoard.MoveHistory.Last<IGameMove>()).MoveType == ChessMoveType.PawnPromote)
-        //        mBoard.UndoLastMove();
-        //    mBoard.UndoLastMove();
-        //    this.method_0();
-        //}
+            List < ChessSquare > promotionMoves = new List<ChessSquare>();
+            promotionMoves.Add(queen);
+            promotionMoves.Add(knight);
+            promotionMoves.Add(rook);
+            promotionMoves.Add(bishop);
 
-        //public void ApplyMove(BoardPosition startPosition, BoardPosition endPosition)
-        //{
-        //    foreach (ChessMove possibleMove in mBoard.GetPossibleMoves())
-        //    {
-        //        if (possibleMove.StartPosition.Equals(startPosition) && possibleMove.EndPosition.Equals(endPosition))
-        //        {
-        //            mBoard.ApplyMove((IGameMove)possibleMove);
-        //            if (possibleMove.Piece.PieceType == ChessPieceType.Pawn && (possibleMove.EndPosition.Row == 0 || possibleMove.EndPosition.Row == 7))
-        //            {
-        //                this.IsPawnPromotion = true;
-        //                this.PromotionMoves.Clear();
-        //                mBoard.GetPossibleMoves().Cast<ChessMove>().OrderBy<ChessMove, int>((Func<ChessMove, int>)(chessMove_0 => mBoard.GetPieceValue((ChessPieceType)chessMove_0.EndPosition.Col))).Select<ChessMove, ChessSquare>((Func<ChessMove, ChessSquare>)(chessMove_0 => new ChessSquare()
-        //                {
-        //                    Piece = new ChessPiecePosition((ChessPieceType)chessMove_0.EndPosition.Col, mBoard.CurrentPlayer),
-        //                    Position = chessMove_0.StartPosition
-        //                })).ToList<ChessSquare>().ForEach((Action<ChessSquare>)(chessSquare_0 => this.PromotionMoves.Add(chessSquare_0)));
-        //                break;
-        //            }
-        //            this.IsPawnPromotion = false;
-        //            this.PromotionMoves.Clear();
-        //            break;
-        //        }
-        //    }
-        //    this.method_0();
-        //}
+            foreach(var move in promotionMoves) {
+                move.CurrentPlayer = CurrentPlayer;
+            }
+            return promotionMoves;
 
-        //private void method_0()
-        //{
-        //    IEnumerable<int> source = Enumerable.Range(0, 8);
-        //    Func<int, IEnumerable<int>> func = (Func<int, IEnumerable<int>>)(int_0 => Enumerable.Range(0, 8));
-        //    Func<int, IEnumerable<int>> collectionSelector;
-        //    IEnumerable<BoardPosition> boardPositions = source.SelectMany<int, int, BoardPosition>(collectionSelector, (Func<int, int, BoardPosition>)((int_0, int_1) => new BoardPosition(int_0, int_1)));
-        //    int index = 0;
-        //    foreach (BoardPosition position in boardPositions)
-        //    {
-        //        mSquares[index].Piece = mBoard.GetPieceAtPosition(position);
-        //        ++index;
-        //    }
-        //    PossibleMoves = new HashSet<BoardPosition>(mBoard.GetPossibleMoves().Cast<ChessMove>().Select<ChessMove, BoardPosition>((Func<ChessMove, BoardPosition>)(chessMove_0 => chessMove_0.StartPosition)));
-        //    this.method_1("BoardValue");
-        //    this.method_1("CurrentPlayer");
-        //    this.method_1("CanUndo");
-        //}
 
-        //public HashSet<BoardPosition> GetPossibleMovesAtPosition(BoardPosition position)
-        //{
-        //    // ISSUE: object of a compiler-generated type is created
-        //    // ISSUE: reference to a compiler-generated method
-        //    return new HashSet<BoardPosition>(((IEnumerable<ChessMove>)mBoard.GetPossibleMoves()).Where<ChessMove>(new Func<ChessMove, bool>(new ChessViewModel.Class18()
-        //    {
-        //        boardPosition_0 = position
-        //    }.method_0)).Select<ChessMove, BoardPosition>((Func<ChessMove, BoardPosition>)(chessMove_0 => chessMove_0.EndPosition)));
-        //}
 
-        //private void method_1(string string_0)
-        //{
-        //    // ISSUE: reference to a compiler-generated field
-        //    PropertyChangedEventHandler changedEventHandler0 = PropertyChanged;
-        //    if (changedEventHandler0 == null)
-        //        return;
-        //    PropertyChangedEventArgs e = new PropertyChangedEventArgs(string_0);
-        //    changedEventHandler0((object)this, e);
-        //}
+        }
+
+       
         public ObservableCollection<ChessSquare> Squares {
             get { return mSquares; }
         }
@@ -304,7 +284,7 @@ namespace Cecs475.BoardGames.Chess.View {
 
             set {
                 mPromotionMoves = value;
-                OnPropertyChanged("PromotionMoves");
+                OnPropertyChanged(nameof(PromotionMoves));
             }
         }
 
@@ -324,7 +304,7 @@ namespace Cecs475.BoardGames.Chess.View {
             }
             set {
                 mPawnPromotion = value;
-                OnPropertyChanged("IsPawnPromotion");
+                OnPropertyChanged(nameof(IsPawnPromotion));
             }
         }
 
