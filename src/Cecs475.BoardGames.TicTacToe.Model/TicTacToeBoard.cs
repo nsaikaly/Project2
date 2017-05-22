@@ -10,7 +10,13 @@ namespace Cecs475.BoardGames.TicTacToe.Model
 	public class TicTacToeBoard : IGameBoard {
 		private bool mGameOver;
 		private int mPlayer;
+		private int mWeight;
 		private sbyte[,] mBoard = new sbyte[3, 3];
+		private sbyte[,] mWeights = new sbyte[3, 3] {
+			{3, 1, 3 },
+			{1, 2, 1 },
+			{3, 1, 3 }
+		};
 
 		public TicTacToeBoard() {
 			mPlayer = 1;
@@ -32,9 +38,24 @@ namespace Cecs475.BoardGames.TicTacToe.Model
 			get; private set;
 		}
 
+		public int Weight {
+			get {
+				return Value == 0 ? mWeight :
+					Value > 0 ? int.MaxValue :
+					int.MinValue;
+			}
+		}
+
+		public bool IsFinished {
+			get {
+				return mGameOver || MoveHistory.Count == 9;
+			}
+		}
+
 		public void ApplyMove(IGameMove move) {
 			TicTacToeMove m = move as TicTacToeMove;
 			SetPosition(m.Position, CurrentPlayer);
+			mWeight += mPlayer * mWeights[m.Position.Row, m.Position.Col];
 			MoveHistory.Add(m);
 			mPlayer = -mPlayer;
 			mGameOver = GameIsOver();
@@ -85,6 +106,8 @@ namespace Cecs475.BoardGames.TicTacToe.Model
 		public void UndoLastMove() {
 			TicTacToeMove m = MoveHistory.Last() as TicTacToeMove;
 			SetPosition(m.Position, 0);
+			Value = 0;
+			mWeight += mPlayer * mWeights[m.Position.Row, m.Position.Col];
 			mPlayer = -mPlayer;
 			MoveHistory.RemoveAt(MoveHistory.Count - 1);
 		}

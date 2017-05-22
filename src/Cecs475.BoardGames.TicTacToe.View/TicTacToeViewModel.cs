@@ -1,4 +1,5 @@
 ﻿using Cecs475.BoardGames;
+using Cecs475.BoardGames.ComputerOpponent;
 using Cecs475.BoardGames.TicTacToe.Model;
 using Cecs475.BoardGames.View;
 using System;
@@ -40,6 +41,7 @@ namespace Cecs475.BoardGames.TicTacToe.View {
 	public class TicTacToeViewModel : IGameViewModel, INotifyPropertyChanged {
 		private TicTacToeBoard mBoard;
 		private ObservableCollection<TicTacToeSquare> mSquares;
+		private IGameAi mGameAi = new MinimaxAi(8);
 
 		public event EventHandler GameFinished;
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -71,6 +73,9 @@ namespace Cecs475.BoardGames.TicTacToe.View {
 
 		public void UndoMove() {
 			mBoard.UndoLastMove();
+			if (Players == NumberOfPlayers.One) {
+				mBoard.UndoLastMove();
+			}
 			RebindState();
 		}
 
@@ -83,14 +88,21 @@ namespace Cecs475.BoardGames.TicTacToe.View {
 				}
 			}
 
+			if (Players == NumberOfPlayers.One && !mBoard.IsFinished) {
+				var bestMove = mGameAi.FindBestMove(mBoard);
+				if (bestMove != null) {
+					mBoard.ApplyMove(bestMove);
+				}
+			}
+
 			RebindState();
 		}
 
 		private void RebindState() {
 			PossibleMoves = new HashSet<BoardPosition>(
-				from TicTacToeMove m in mBoard.GetPossibleMoves()
-				select m.Position
-			);
+							from TicTacToeMove m in mBoard.GetPossibleMoves()
+							select m.Position
+						);
 			var newSquares =
 				from r in Enumerable.Range(0, 3)
 				from c in Enumerable.Range(0, 3)
@@ -101,13 +113,13 @@ namespace Cecs475.BoardGames.TicTacToe.View {
 				i++;
 			}
 
+			if (mBoard.IsFinished) {
+				GameFinished?.Invoke(this, new EventArgs());
+			}
+
 			OnPropertyChanged(nameof(BoardValue));
 			OnPropertyChanged(nameof(CurrentPlayer));
 			OnPropertyChanged(nameof(CanUndo));
-
-			if (PossibleMoves.Count == 0) {
-				GameFinished?.Invoke(this, new EventArgs());
-			}
 		}
 
 		public ObservableCollection<TicTacToeSquare> Squares {
@@ -131,6 +143,8 @@ namespace Cecs475.BoardGames.TicTacToe.View {
 				return mBoard.MoveHistory.Count > 0;
 			}
 		}
+
+		public NumberOfPlayers Players { get; set; }
 	}
 
 	/// <summary>

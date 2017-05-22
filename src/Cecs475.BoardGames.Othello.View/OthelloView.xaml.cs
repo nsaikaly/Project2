@@ -27,6 +27,9 @@ namespace Cecs475.BoardGames.Othello.View {
 		}
 
 		private void Border_MouseEnter(object sender, MouseEventArgs e) {
+			if (!IsEnabled)
+				return;
+
 			Border b = sender as Border;
 			var square = b.DataContext as OthelloSquare;
 			var vm = FindResource("vm") as OthelloViewModel;
@@ -36,6 +39,9 @@ namespace Cecs475.BoardGames.Othello.View {
 		}
 
 		private void Border_MouseLeave(object sender, MouseEventArgs e) {
+			if (!IsEnabled)
+				return;
+
 			Border b = sender as Border;
 			var square = b.DataContext as OthelloSquare;
 			square.IsHovered = false;
@@ -45,13 +51,33 @@ namespace Cecs475.BoardGames.Othello.View {
 			get { return FindResource("vm") as OthelloViewModel; }
 		}
 
-		private void Border_MouseUp(object sender, MouseButtonEventArgs e) {
+		private async void Border_MouseUp(object sender, MouseButtonEventArgs e) {
+			if (!IsEnabled)
+				return;
+
 			Border b = sender as Border;
 			var square = b.DataContext as OthelloSquare;
 			var vm = FindResource("vm") as OthelloViewModel;
 			if (vm.PossibleMoves.Contains(square.Position)) {
-				vm.ApplyMove(square.Position);
+				// We will use the IsEnabled property to lock out UI interactions
+				// while the AI is deciding on a move.
+				IsEnabled = false;
+
+				// By awaiting the result of ApplyMove, we surrender control back to 
+				// the main UI thread while the AI completes its work. (IF there is 
+				// an AI.)
+				await vm.ApplyMove(square.Position);
+
+				// Once the the move (and AI followup) is applied, we enable the control
+				// and continue with our work.
 				square.IsHovered = false;
+				if (vm.PossibleMoves.Count == 1 && vm.PossibleMoves.First().Row == -1) {
+					// This is a Pass move. Auto-apply the move and inform the user.
+					MessageBox.Show((vm.CurrentPlayer == 1 ? "Black " : "White ") +
+						" has no move and must pass.", "No possible moves", MessageBoxButton.OK);
+					await vm.ApplyMove(vm.PossibleMoves.First());
+				}
+				IsEnabled = true;
 			}
 		}
 	}

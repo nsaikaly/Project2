@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Cecs475.BoardGames.Othello {
 	/// <summary>
@@ -10,6 +11,15 @@ namespace Cecs475.BoardGames.Othello {
 
 		// The board is represented by an 8x8 matrix of signed bytes. Each entry represents one square on the board.
 		private sbyte[,] mBoard = new sbyte[BOARD_SIZE, BOARD_SIZE];
+		private sbyte[,] mWeights = new sbyte[BOARD_SIZE, BOARD_SIZE] {
+			{16, 0, 8, 8, 8, 8, 0, 16},
+			{0,  0, 1, 1, 1, 1, 0, 0},
+			{8,  1, 2, 2, 2, 2, 1, 8},
+			{8,  1, 2, 2, 2, 2, 1, 8},
+			{8,  1, 2, 2, 2, 2, 1, 8},
+			{8,  1, 2, 2, 2, 2, 1, 8},
+			{0,  0, 1, 1, 1, 1, 0, 0},
+			{16, 0, 8, 8, 8, 8, 0, 16}};
 
 		// Internally, we will represent pieces for each player as 1 or -1 (for player 2), which makes certain game 
 		// operations easier to code. Those values don't make sense to the public, however, so we will expose them in a 
@@ -59,6 +69,16 @@ namespace Cecs475.BoardGames.Othello {
 			get; private set;
 		}
 
+		public int Weight {
+			get; private set;
+		}
+
+		public bool IsFinished {
+			get {
+				return PassCount == 2;
+			}
+		}
+
 		// This is how we will expose the state of the gameboard in a way that reduces coupling.
 		// No one needs to know HOW the data is represented; they simply need to know which player is
 		// at which position.
@@ -90,6 +110,7 @@ namespace Cecs475.BoardGames.Othello {
 				// Otherwise update the board at the move's position with the current player.
 				mBoard[m.Position.Row, m.Position.Col] = (sbyte)mCurrentPlayer;
 				Value += mCurrentPlayer;
+				Weight += mCurrentPlayer * mWeights[m.Position.Row, m.Position.Col];
 
 				// Iterate through all 8 directions radially from the move's position.
 				for (int rDelta = -1; rDelta <= 1; rDelta++) {
@@ -123,6 +144,7 @@ namespace Cecs475.BoardGames.Othello {
 							while (steps > 1) {
 								mBoard[newPos.Row, newPos.Col] = (sbyte)mCurrentPlayer;
 								Value += 2 * mCurrentPlayer;
+								Weight += 2 * mCurrentPlayer * mWeights[newPos.Row, newPos.Col];
 
 								newPos = newPos.Translate(-rDelta, -cDelta);
 								steps--;
@@ -212,6 +234,8 @@ namespace Cecs475.BoardGames.Othello {
 			if (!m.IsPass) {
 				// Reset the board at the move's position.
 				mBoard[m.Position.Row, m.Position.Col] = 0;
+				Value += mCurrentPlayer;
+				Weight += mCurrentPlayer * mWeights[m.Position.Row, m.Position.Col];
 
 				// Iterate through the move's recorded flipsets.
 				foreach (var flipSet in m.FlipSets) {
@@ -220,6 +244,8 @@ namespace Cecs475.BoardGames.Othello {
 					for (int i = 1; i <= flipSet.Count; i++) {
 						pos = pos.Translate(flipSet.RowDelta, flipSet.ColDelta);
 						mBoard[pos.Row, pos.Col] = (sbyte)mCurrentPlayer;
+						Value += 2 * mCurrentPlayer;
+						Weight += 2 * mCurrentPlayer * mWeights[pos.Row, pos.Col];
 					}
 				}
 

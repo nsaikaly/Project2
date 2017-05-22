@@ -103,24 +103,50 @@ namespace Cecs475.BoardGames.Chess.View {
                 }
             );
 
-            mPromotionMoves = new ObservableCollection<ChessSquare>(
-                   from pos in (
-                       from r in Enumerable.Range(0, 8)
-                       from c in Enumerable.Range(0, 8)
-                       select new BoardPosition(r, c)
-                   )
-                   select new ChessSquare() {
-                       Position = pos,
-                       CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player,
-                       Piece = mBoard.GetPieceAtPosition(pos),
-                       ViewModel = this
-                   }
-               );
+            //mPromotionMoves = new ObservableCollection<ChessSquare>(
+            //       from pos in (
+            //           from r in Enumerable.Range(0, 8)
+            //           from c in Enumerable.Range(0, 8)
+            //           select new BoardPosition(r, c)
+            //       )
+            //       select new ChessSquare() {
+            //           Position = pos,
+            //           CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player,
+            //           Piece = mBoard.GetPieceAtPosition(pos),
+            //           ViewModel = this
+            //       }
+            //   );
+
+
+            
+
 
             PossibleMoves = new HashSet<ChessMove>(
                 from ChessMove m in mBoard.GetPossibleMoves()
                 select m
             );
+
+            var possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
+
+            List<ChessPiecePosition> pawnMoves = new List<ChessPiecePosition>();
+            var queen = new ChessPiecePosition(ChessPieceType.Queen, CurrentPlayer);
+            var knight = new ChessPiecePosition(ChessPieceType.Knight, CurrentPlayer);
+            var rookPawn = new ChessPiecePosition(ChessPieceType.RookPawn, CurrentPlayer);
+            var bioshop = new ChessPiecePosition(ChessPieceType.Bishop, CurrentPlayer);
+            pawnMoves.Add(queen);
+            pawnMoves.Add(knight);
+            pawnMoves.Add(rookPawn);
+            pawnMoves.Add(bioshop);
+
+            mPromotionMoves = new ObservableCollection<ChessSquare>();
+            for (int pMoves = 0; pMoves < 4; pMoves++)
+            {
+                mPromotionMoves.Add(new ChessSquare());
+                mPromotionMoves[pMoves].CurrentPlayer = CurrentPlayer;
+                mPromotionMoves[pMoves].Piece = pawnMoves[pMoves];
+                mPromotionMoves[pMoves].IsSelected = false;
+
+            }
         }
 
         public void UndoMove()
@@ -173,6 +199,11 @@ namespace Cecs475.BoardGames.Chess.View {
                     }                 
                 }
 
+                PossibleMoves = new HashSet<ChessMove>(
+                    from ChessMove m in mBoard.GetPossibleMoves()
+                    select m
+                );
+
                 possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
 
                 ChessMove promotionMove = (ChessMove)mBoard.MoveHistory.Last();
@@ -207,25 +238,20 @@ namespace Cecs475.BoardGames.Chess.View {
                     pawnMoves.Add(rookPawn);
                     pawnMoves.Add(bioshop);
 
-                    var newPromotion =
-                             from r in possMoves
-                             select new BoardPosition(r.StartPosition.Row, r.StartPosition.Col);
-                    int j = 0;
-                    foreach (var pos in newPromotion) {
-                        mPromotionMoves[j].CurrentPlayer = CurrentPlayer;
-                        mPromotionMoves[j].Piece = pawnMoves[j];
-                        mPromotionMoves[j].IsSelected = false;
-                        j++;
+                    mPromotionMoves = new ObservableCollection<ChessSquare>();
+                    for(int pMoves = 0; pMoves < 4; pMoves++) {
+                        mPromotionMoves.Add(new ChessSquare());
+                        mPromotionMoves[pMoves].CurrentPlayer = CurrentPlayer;
+                        mPromotionMoves[pMoves].Piece = pawnMoves[pMoves];
+                        mPromotionMoves[pMoves].IsSelected = false;
+                      
                     }
 
 
 
                 }
 
-                PossibleMoves = new HashSet<ChessMove>(
-                    from ChessMove m in mBoard.GetPossibleMoves()
-                    select m
-                );
+                
                 var newSquares =
                     from r in Enumerable.Range(0, 8)
                     from c in Enumerable.Range(0, 8)

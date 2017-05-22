@@ -41,13 +41,15 @@ namespace Cecs475.BoardGames.Chess.View
 
 
             //Image Img = new Image();
+
             //Img.Source = new BitmapImage(new Uri("/Cecs475.BoardGames.Chess.View;component/Resources/" + "white" + "rook.png"));
-            //< Image Source = "{Binding Piece, Converter={StaticResource PieceImage}}" />
-            //for (var i = 0; i < 5; i++) {
+            ////< Image Source = "{Binding Piece, Converter={StaticResource PieceImage}}" />
+            //for (var i = 0; i < 5; i++)
+            //{
 
 
             //    var converted = (BitmapImage)(converter.Convert(moves[i].Piece, null, null, null));
-            //    PromotionPanel.Children.Add(converted);
+            //    PromotionPanel.Children.Add(new Button());
             //}
 
 
@@ -60,14 +62,31 @@ namespace Cecs475.BoardGames.Chess.View
             Border b = sender as Border;
             var square = b.DataContext as ChessSquare;
             var vm = FindResource("vm") as ChessViewModel;
-            b.Background = RED_BRUSH;
+           
+            var startPos = square.Position;
+            var piece = square.Piece.PieceType;
+            var possMoves = vm.PossibleMoves;
+
+            foreach (var move in possMoves)
+            {
+                if (move.EndPosition.ToString().Equals(piece.ToString()))
+                {
+                    b.Background = RED_BRUSH;
+                    vm.ApplyMove(move);
+                }
+            }
         }
 
         private void Border_MouseEnter(object sender, MouseEventArgs e) {
             Border b = sender as Border;
             var square = b.DataContext as ChessSquare;
             var vm = FindResource("vm") as ChessViewModel;
-            b.Background = GREEN_BRUSH;
+            foreach (var move in vm.PossibleMoves)
+            {
+                if (square.Position.Equals(move.EndPosition))
+                    b.Background = GREEN_BRUSH;
+
+            }
         }
 
         private void Border_MouseLeave(object sender, MouseEventArgs e) {

@@ -36,5 +36,16 @@ namespace Cecs475.BoardGames {
 		/// A value indicating which player is winning the game, in a game-specific way. Positive is player 1.
 		/// </summary>
 		int Value { get; }
+
+		/// <summary>
+		/// A value indicating the relative strength of the two players' positions, in a game-specific way. Positive
+		/// is an advantage for player 1. Used by game AIs to select best moves.
+		/// </summary>
+		int Weight { get; }
+
+		/// <summary>
+		/// True if the game is over.
+		/// </summary>
+		bool IsFinished { get; }
 	}
 }

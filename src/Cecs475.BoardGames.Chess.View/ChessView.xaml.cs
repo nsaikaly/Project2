@@ -119,7 +119,10 @@ namespace Cecs475.BoardGames.Chess.View {
                 else if(move.EndPosition.Equals(square.Position) && SELECTED)
                 {
                     MOVE.EndPosition = square.Position;
-                    
+
+                    vm.ApplyMove(MOVE);
+                    SELECTED = false;
+                    currentSelected = null;
 
                     if (/*MOVE.Piece.PieceType == ChessPieceType.Pawn && */(MOVE.EndPosition.Row == 0 || MOVE.EndPosition.Row == 7))
                     {
@@ -129,9 +132,7 @@ namespace Cecs475.BoardGames.Chess.View {
 
                     }
 
-                    vm.ApplyMove(MOVE);
-                    SELECTED = false;
-                    currentSelected = null;
+                   
                     
                 }
             }

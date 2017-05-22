@@ -233,10 +233,14 @@ namespace Cecs475.BoardGames.Chess {
             get; private set;
         }
 
-        /// <summary>
-        /// Returns the piece and player at the given position on the board.
-        /// </summary>
-        public ChessPiecePosition GetPieceAtPosition(BoardPosition position) {
+        public int Weight {
+            get; private set;
+        }
+
+      /// <summary>
+      /// Returns the piece and player at the given position on the board.
+      /// </summary>
+      public ChessPiecePosition GetPieceAtPosition(BoardPosition position) {
             var boardVal = mBoard[position.Row, position.Col];
             return new ChessPiecePosition((ChessPieceType)Math.Abs(mBoard[position.Row, position.Col]),
                 boardVal > 0 ? 1 : boardVal < 0 ? 2 : 0);
@@ -728,12 +732,22 @@ namespace Cecs475.BoardGames.Chess {
 
                     if (move.MoveType == ChessMoveType.Normal) {
                         //CheckForPawnPromote(move.EndPosition, pieceType);
+                        bool castleKingSide1 = mAllowCastlingKingSide1;
+                        bool castleQueenSide1 = mAllowCastlingQueenSide1;
+                        bool castleKingSide2 = mAllowCastlingKingSide2;
+                        bool castleQueenSide2 = mAllowCastlingQueenSide2;
+
                         ApplyMove(move);                        
                         CurrentPlayer *= -1;
                         if (!Check())
                             checkMoves.Add(move);                        
                         CurrentPlayer *= -1;
                         UndoLastMove();
+
+                        mAllowCastlingKingSide1 = castleKingSide1;
+                        mAllowCastlingQueenSide1 = castleQueenSide1;
+                        mAllowCastlingKingSide2 = castleKingSide2;
+                        mAllowCastlingQueenSide2 = castleQueenSide2;
                     }
                     else
                         checkMoves.Add(move);
