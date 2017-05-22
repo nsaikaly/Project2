@@ -23,21 +23,21 @@ namespace Cecs475.BoardGames.WpfApplication {
 		public GameChoiceWindow() {
 			InitializeComponent();
 
-         Type gameType = typeof(IGameType);
-         var path = @"bin\Debug\lib";
-         List<string> dirs = new List<string>(Directory.EnumerateDirectories(path, "*.dll"));
+         //Type gameType = typeof(IGameType);
+         //var path = @"bin\Debug\lib";
+         //List<string> dirs = new List<string>(Directory.EnumerateDirectories(path, "*.dll"));
 
-         foreach (var dir in dirs) {
-            Assembly.LoadFrom(dir);
-         }
+         //foreach (var dir in dirs) {
+         //   Assembly.LoadFrom(dir);
+         //}
 
-         AppDomain.CurrentDomain.GetAssemblies();
+         //AppDomain.CurrentDomain.GetAssemblies();
 
-         foreach(var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-            foreach(var t in assembly.GetTypes()) {
-
-            }
-         }
+         //foreach(var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+         //   foreach(var type in assembly.GetTypes()) {
+         //      //filter the list of types to only containt hose types t such that IGameType is assignable from t
+         //   }
+         //}
 
       }
 

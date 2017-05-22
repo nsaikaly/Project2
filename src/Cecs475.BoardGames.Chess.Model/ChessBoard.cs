@@ -237,6 +237,12 @@ namespace Cecs475.BoardGames.Chess {
             get; private set;
         }
 
+      public bool IsFinished {
+         get {
+            return IsCheckmate;
+         }
+      }
+
       /// <summary>
       /// Returns the piece and player at the given position on the board.
       /// </summary>

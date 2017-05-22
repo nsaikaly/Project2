@@ -318,6 +318,8 @@ namespace Cecs475.BoardGames.Chess.View {
             get; private set;
         }
 
+        public NumberOfPlayers Players { get; set; }
+
         public int BoardValue { get { return mBoard.Value; } }
 
         public int CurrentPlayer { get { return mBoard.CurrentPlayer; } }
