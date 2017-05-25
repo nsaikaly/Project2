@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Collections.ObjectModel;
 using Cecs475.BoardGames;
 using Cecs475.BoardGames.View;
+using Cecs475.BoardGames.ComputerOpponent;
 using System;
 
 namespace Cecs475.BoardGames.Chess.View {
@@ -74,10 +75,12 @@ namespace Cecs475.BoardGames.Chess.View {
     }
 
     public class ChessViewModel : INotifyPropertyChanged, IGameViewModel {
+        private const int MAX_AI_DEPTH = 3;
         private ChessBoard mBoard;
         private ObservableCollection<ChessSquare> mSquares;
         private bool mPawnPromotion;
         private ObservableCollection<ChessSquare> mPromotionMoves;
+        private IGameAi mGameAi = new MinimaxAi(MAX_AI_DEPTH);
 
         public event PropertyChangedEventHandler PropertyChanged;
         public event EventHandler GameFinished;
@@ -154,6 +157,10 @@ namespace Cecs475.BoardGames.Chess.View {
             if(CanUndo)
             {                
                 mBoard.UndoLastMove();
+
+                if (Players == NumberOfPlayers.One) {
+                    mBoard.UndoLastMove();
+                }
 
                 PossibleMoves = new HashSet<ChessMove>(
                     from ChessMove m in mBoard.GetPossibleMoves()
@@ -272,6 +279,10 @@ namespace Cecs475.BoardGames.Chess.View {
             OnPropertyChanged(nameof(IsPawnPromotion));
         }
 
+
+        private void RebindState() {
+
+        }
         public List<ChessSquare> GetPromotionSquares() {
             ChessSquare queen = new ChessSquare();
             ChessSquare rook = new ChessSquare();
