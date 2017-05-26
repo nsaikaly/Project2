@@ -34,7 +34,7 @@ namespace Cecs475.BoardGames.ComputerOpponent {
          return move.Move;
       }
 
-      private static MinimaxBestMove FindBestMove(IGameBoard b, int depthLeft, bool maximize, int alpha, int beta) {
+      private static MinimaxBestMove FindBestMove(IGameBoard b, int depthLeft, bool maximize) {
          // Implement the minimax algorithm. 
          // Your first attempt will not use alpha-beta pruning. Once that works, 
          // implement the pruning as discussed in the project notes.

@@ -6,6 +6,7 @@ using Cecs475.BoardGames;
 using Cecs475.BoardGames.View;
 using Cecs475.BoardGames.ComputerOpponent;
 using System;
+using System.Threading.Tasks;
 
 namespace Cecs475.BoardGames.Chess.View {
     public class ChessSquare : INotifyPropertyChanged {
@@ -105,22 +106,6 @@ namespace Cecs475.BoardGames.Chess.View {
                     ViewModel = this
                 }
             );
-
-            //mPromotionMoves = new ObservableCollection<ChessSquare>(
-            //       from pos in (
-            //           from r in Enumerable.Range(0, 8)
-            //           from c in Enumerable.Range(0, 8)
-            //           select new BoardPosition(r, c)
-            //       )
-            //       select new ChessSquare() {
-            //           Position = pos,
-            //           CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player,
-            //           Piece = mBoard.GetPieceAtPosition(pos),
-            //           ViewModel = this
-            //       }
-            //   );
-
-
             
 
 
@@ -187,7 +172,7 @@ namespace Cecs475.BoardGames.Chess.View {
             }
         }
 
-        public void ApplyMove(ChessMove cMove)
+        public async Task ApplyMove(ChessMove cMove)
         {
             if (mBoard.IsCheckmate)
             {
@@ -196,93 +181,84 @@ namespace Cecs475.BoardGames.Chess.View {
             else
             {
                 //Need to account for pawn promotion
-                var possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
-                foreach (var move in possMoves)
-                {
-                    if (move.Equals(cMove))
-                    {
-                        mBoard.ApplyMove(move);
-                        break;
-                    }                 
-                }
+               var possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
+               foreach (var move in possMoves)
+               {
+                  if (move.Equals(cMove))
+                  {
+                     mBoard.ApplyMove(move);
+                     break;
+                  }                  
+               }
+               RebindState();
+               CheckPromotionMoves();
 
-                PossibleMoves = new HashSet<ChessMove>(
+               if (Players == NumberOfPlayers.One && !mBoard.IsFinished) {
+
+                  var bestMove = await Task.Run(() => mGameAi.FindBestMove(mBoard));
+                  if (bestMove != null) {
+                     mBoard.ApplyMove(bestMove);
+                     RebindState();
+                  }
+               }
+
+            CheckPromotionMoves();
+         }
+           
+          
+        }
+
+
+        private void RebindState() {
+            PossibleMoves = new HashSet<ChessMove>(
                     from ChessMove m in mBoard.GetPossibleMoves()
                     select m
                 );
 
-                possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
-
-                ChessMove promotionMove = (ChessMove)mBoard.MoveHistory.Last();
-
-                if (promotionMove.Piece.PieceType == ChessPieceType.Pawn && (promotionMove.EndPosition.Row == 0 || promotionMove.EndPosition.Row == 7)) {
-                    IsPawnPromotion = true;
-
-
-                    //mPromotionMoves = new ObservableCollection<ChessSquare>(
-                    //from pos in (
-                    //    from r in PossibleMoves
-                    //    select new BoardPosition(r.StartPosition.Row, r.StartPosition.Col)
-                    //)
-                    //select new ChessSquare() {
-                    //    Position = pos,
-                    //    CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player,
-                    //    Piece = mBoard.GetPieceAtPosition(pos),
-                    //    //ViewModel = ChessViewModel
-                    //}
-                    //);
-
-
-                    possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
-
-                    List<ChessPiecePosition> pawnMoves = new List<ChessPiecePosition>();
-                    var queen = new ChessPiecePosition(ChessPieceType.Queen, CurrentPlayer);
-                    var knight = new ChessPiecePosition(ChessPieceType.Knight, CurrentPlayer);
-                    var rookPawn = new ChessPiecePosition(ChessPieceType.RookPawn, CurrentPlayer);
-                    var bioshop = new ChessPiecePosition(ChessPieceType.Bishop, CurrentPlayer);
-                    pawnMoves.Add(queen);
-                    pawnMoves.Add(knight);
-                    pawnMoves.Add(rookPawn);
-                    pawnMoves.Add(bioshop);
-
-                    mPromotionMoves = new ObservableCollection<ChessSquare>();
-                    for(int pMoves = 0; pMoves < 4; pMoves++) {
-                        mPromotionMoves.Add(new ChessSquare());
-                        mPromotionMoves[pMoves].CurrentPlayer = CurrentPlayer;
-                        mPromotionMoves[pMoves].Piece = pawnMoves[pMoves];
-                        mPromotionMoves[pMoves].IsSelected = false;
-                      
-                    }
-
-
-
-                }
-
-                
-                var newSquares =
-                    from r in Enumerable.Range(0, 8)
-                    from c in Enumerable.Range(0, 8)
-                    select new BoardPosition(r, c);
-                int i = 0;
-                foreach (var pos in newSquares)
-                {
-                    mSquares[i].CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player;
-                    mSquares[i].Piece = mBoard.GetPieceAtPosition(pos);
-                    mSquares[i].IsSelected = false;
-                    i++;
-                }
+            var newSquares =
+                from r in Enumerable.Range(0, 8)
+                from c in Enumerable.Range(0, 8)
+                select new BoardPosition(r, c);
+            int i = 0;
+            foreach (var pos in newSquares) {
+               mSquares[i].CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player;
+               mSquares[i].Piece = mBoard.GetPieceAtPosition(pos);
+               mSquares[i].IsSelected = false;
+               i++;
             }
-           
+
             OnPropertyChanged(nameof(BoardValue));
             OnPropertyChanged(nameof(CurrentPlayer));
             OnPropertyChanged(nameof(CanUndo));
             OnPropertyChanged(nameof(IsPawnPromotion));
         }
+        private void CheckPromotionMoves() {
+            var possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
+            ChessMove promotionMove = (ChessMove)mBoard.MoveHistory.Last();
+            if (promotionMove.Piece.PieceType == ChessPieceType.Pawn && (promotionMove.EndPosition.Row == 0 || promotionMove.EndPosition.Row == 7)) {
+               IsPawnPromotion = true;
+               possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
 
+               List<ChessPiecePosition> pawnMoves = new List<ChessPiecePosition>();
+               var queen = new ChessPiecePosition(ChessPieceType.Queen, CurrentPlayer);
+               var knight = new ChessPiecePosition(ChessPieceType.Knight, CurrentPlayer);
+               var rookPawn = new ChessPiecePosition(ChessPieceType.RookPawn, CurrentPlayer);
+               var bioshop = new ChessPiecePosition(ChessPieceType.Bishop, CurrentPlayer);
+               pawnMoves.Add(queen);
+               pawnMoves.Add(knight);
+               pawnMoves.Add(rookPawn);
+               pawnMoves.Add(bioshop);
 
-        private void RebindState() {
+               mPromotionMoves = new ObservableCollection<ChessSquare>();
+               for (int pMoves = 0; pMoves < 4; pMoves++) {
+                  mPromotionMoves.Add(new ChessSquare());
+                  mPromotionMoves[pMoves].CurrentPlayer = CurrentPlayer;
+                  mPromotionMoves[pMoves].Piece = pawnMoves[pMoves];
+                  mPromotionMoves[pMoves].IsSelected = false;
 
-        }
+               }
+            }
+         }
         public List<ChessSquare> GetPromotionSquares() {
             ChessSquare queen = new ChessSquare();
             ChessSquare rook = new ChessSquare();

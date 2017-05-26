@@ -114,6 +114,7 @@ namespace Cecs475.BoardGames.Othello.View {
 				}
 			}
 			RebindState();
+
 			if (Players == NumberOfPlayers.One && !mBoard.IsFinished) {
 
 				var bestMove = await Task.Run(() => mGameAi.FindBestMove(mBoard));

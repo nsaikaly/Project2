@@ -61,28 +61,14 @@ namespace Cecs475.BoardGames.Chess.View {
             get { return FindResource("vm") as ChessViewModel; }
         }
 
-        private void Border_MouseUp(object sender, MouseButtonEventArgs e) {
+        private async void Border_MouseUp(object sender, MouseButtonEventArgs e) {
             Border b = sender as Border;
             var square = b.DataContext as ChessSquare;
             var vm = FindResource("vm") as ChessViewModel;
             var possMoves = vm.PossibleMoves;
 
             if (SELECTED && currentSelected != null)
-            {
-                //var move = new ChessMove(currentSelected.Position, square.Position);
-                //bool possible = false;
-                //foreach (var posMove in vm.PossibleMoves)
-                //{                    
-                //    if(posMove.Equals(move))
-                //    {
-                //        possible = true;
-                //    }
-                //}
-                //if (!possible) {
-                //currentSelected.IsSelected = false;
-                //currentSelected = null;
-                //SELECTED = false;
-                //}
+            {   
 
                 if (!square.IsHovered)
                 {
@@ -120,7 +106,8 @@ namespace Cecs475.BoardGames.Chess.View {
                 {
                     MOVE.EndPosition = square.Position;
 
-                    vm.ApplyMove(MOVE);
+                    await vm.ApplyMove(MOVE);
+                    currentSelected.IsHovered = false;
                     SELECTED = false;
                     currentSelected = null;
 
