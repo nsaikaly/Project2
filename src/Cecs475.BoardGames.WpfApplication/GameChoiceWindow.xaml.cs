@@ -21,36 +21,30 @@ namespace Cecs475.BoardGames.WpfApplication {
 	/// </summary>
 	public partial class GameChoiceWindow : Window {
 		public GameChoiceWindow() {
-			InitializeComponent();
+			
 
-            Type gameType = typeof(IGameType);
-            var path = @"bin\Debug\lib";
-            List<string> dirs = new List<string>(Directory.EnumerateDirectories(path, "*.dll"));
+         Type gameType = typeof(IGameType);     
+         var path = @"lib";
 
-            foreach (var dir in dirs) {
-                Assembly.LoadFrom(dir);
-            }
+         DirectoryInfo d = new DirectoryInfo(path);
+         FileInfo[] dirs = d.GetFiles(); //Getting Text files
 
-            AppDomain.CurrentDomain.GetAssemblies();
-            List<Type> gameTypes = new List<Type>();
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                //foreach (var type in assembly.GetTypes()) {
-                //    //filter the list of types to only containt those types t such that IGameType is assignable from t
-                //    if(type.BaseType.Equals(gameType.BaseType)) {                        
-                //        //type.GetConstructor(Type.EmptyTypes);
-                //        //Activator.CreateInstance(type);
-                //    }
+         foreach (var dir in dirs) {
+               Assembly.LoadFrom(path + "/" + dir.ToString());
+         }
 
-                //}
+         var gameTypes = AppDomain.CurrentDomain.GetAssemblies()
+                 .SelectMany(a => a.GetTypes())
+                 .Where(t => gameType.IsAssignableFrom(t) && t.IsClass);
 
-                var types = assembly.GetTypes();
-                var filtered = types.Where(t => t.BaseType.Equals(gameType.BaseType));
-                gameTypes.AddRange(filtered);
-            }
 
-            
+         var instances = gameTypes
+            .Select(o => Activator.CreateInstance(o));
 
-        }
+         Resources.Add("GameTypes", instances);
+         InitializeComponent();
+
+      }
 
 		private void Button_Click(object sender, RoutedEventArgs e) {
 			Button b = sender as Button;

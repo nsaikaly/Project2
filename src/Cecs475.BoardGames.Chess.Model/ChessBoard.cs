@@ -234,7 +234,71 @@ namespace Cecs475.BoardGames.Chess {
         }
 
         public int Weight {
-            get; private set;
+           get {
+
+               var pawnStartRow = 6;
+               var pawnValue = 1;
+               if(CurrentPlayer == 2) {
+                  pawnStartRow = 1;
+                  pawnValue = -1;
+               }
+
+
+               var val = Value;
+               var pawnWeight = 0;
+               var threaten = 0;
+               var protects = 0;
+
+               for(int row = 0; row < BOARD_SIZE; row++) {
+                  for(int col = 0; col < BOARD_SIZE; col++) {
+                     if(mBoard[row, col] == pawnValue) {
+                        pawnWeight += row - pawnStartRow;
+                     }
+                  }
+               }
+
+            var tPos = GetThreatenedPositions(CurrentPlayer);
+            foreach(var pos in tPos) {
+               var piece = GetPieceAtPosition(pos);
+               switch(piece.PieceType) {
+                  case ChessPieceType.Bishop:
+                     threaten += 1;
+                     break;
+
+                  case ChessPieceType.Knight:
+                     threaten += 1;
+                     break;
+
+                  case ChessPieceType.RookKing:
+                     threaten += 2;
+                     break;
+
+                  case ChessPieceType.RookPawn:
+                     threaten += 2;
+                     break;
+
+                  case ChessPieceType.RookQueen:
+                     threaten += 2;
+                     break;
+
+                  case ChessPieceType.Queen:
+                     threaten += 5;
+                     break;
+
+                  case ChessPieceType.King:
+                     threaten += 4;
+                     break;
+               }
+            }
+
+            var score = val + pawnWeight + threaten + protects;
+            score -= (Value);
+
+
+
+            return score;
+           }
+           //private set;
         }
 
       public bool IsFinished {
