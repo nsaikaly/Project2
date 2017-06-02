@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Cecs475.BoardGames.Chess.View"
         mc:Ignorable="d" 
-        Background="Beige" Title="PawnPromotionWindow" Height="200" Width="350" 
+        Background="Beige" Title="PawnPromotionWindow" Height="150" Width="400" 
         WindowStyle="None"
         ResizeMode="NoResize" 
         ShowInTaskbar="false" 
@@ -30,7 +30,7 @@
 
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border Background="Blue" Height="50"
+                    <Border Background="Blue" Height="100"
                         MouseEnter="Border_MouseEnter" MouseLeave="Border_MouseLeave"
                         MouseUp="Border_MouseUp">
                         <Image Source="{Binding Piece, Converter={StaticResource PieceImage}}"/>

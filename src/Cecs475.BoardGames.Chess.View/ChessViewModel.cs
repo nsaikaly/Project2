@@ -180,6 +180,18 @@ namespace Cecs475.BoardGames.Chess.View {
             }
             else
             {
+
+
+               if (cMove.MoveType == ChessMoveType.PawnPromote) {
+                  IsPawnPromotion = true;
+               }
+
+               if (IsPawnPromotion) {
+                  mBoard.ApplyMove(cMove);
+                  IsPawnPromotion = false;
+                  RebindState();
+               }
+
                 //Need to account for pawn promotion
                var possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
                foreach (var move in possMoves)
@@ -187,10 +199,12 @@ namespace Cecs475.BoardGames.Chess.View {
                   if (move.Equals(cMove))
                   {
                      mBoard.ApplyMove(move);
+                     RebindState();
                      break;
                   }                  
                }
-               RebindState();
+
+              
                CheckPromotionMoves();
 
                if (Players == NumberOfPlayers.One && !mBoard.IsFinished) {
@@ -232,6 +246,32 @@ namespace Cecs475.BoardGames.Chess.View {
             OnPropertyChanged(nameof(CanUndo));
             OnPropertyChanged(nameof(IsPawnPromotion));
         }
+
+        private void RebindState(ChessPiecePosition piece) {
+            PossibleMoves = new HashSet<ChessMove>(
+                    from ChessMove m in mBoard.GetPossibleMoves()
+                    select m
+                );
+
+            var newSquares =
+                from r in Enumerable.Range(0, 8)
+                from c in Enumerable.Range(0, 8)
+                select new BoardPosition(r, c);
+            int i = 0;
+            foreach (var pos in newSquares) {
+               mSquares[i].CurrentPlayer = mBoard.GetPieceAtPosition(pos).Player;
+               mSquares[i].Piece = piece;
+               mSquares[i].IsSelected = false;
+               i++;
+            }
+
+            OnPropertyChanged(nameof(BoardValue));
+            OnPropertyChanged(nameof(CurrentPlayer));
+            OnPropertyChanged(nameof(CanUndo));
+            OnPropertyChanged(nameof(IsPawnPromotion));
+        }
+
+
         private void CheckPromotionMoves() {
             var possMoves = mBoard.GetPossibleMoves() as IEnumerable<ChessMove>;
             ChessMove promotionMove = (ChessMove)mBoard.MoveHistory.Last();
@@ -257,7 +297,12 @@ namespace Cecs475.BoardGames.Chess.View {
                   mPromotionMoves[pMoves].IsSelected = false;
 
                }
-            }
+
+            PossibleMoves = new HashSet<ChessMove>(
+                 from ChessMove m in mBoard.GetPossibleMoves()
+                 select m
+             );
+         }
          }
         public List<ChessSquare> GetPromotionSquares() {
             ChessSquare queen = new ChessSquare();

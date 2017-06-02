@@ -21,6 +21,7 @@ namespace Cecs475.BoardGames.Chess.View
         public static SolidColorBrush RED_BRUSH = new SolidColorBrush(Colors.Red);
         public static SolidColorBrush GREEN_BRUSH = new SolidColorBrush(Colors.Green);
         public static SolidColorBrush BLUE_BRUSH = new SolidColorBrush(Colors.Blue);
+        public static ChessViewModel VIEW_MODEL = null;
 
         public PawnPromotionWindow(ChessViewModel ViewModel) {
 
@@ -29,6 +30,7 @@ namespace Cecs475.BoardGames.Chess.View
             //one for white player and one for black player
             //based on whose turn it is from the viewmodel, display only one stackpanel in the window with the hardcoded 4 moves
             InitializeComponent();
+            VIEW_MODEL = ViewModel;
             //var player = ViewModel.CurrentPlayer;
             //ChessPieceConverter converter = new ChessPieceConverter();
             //var moves = ViewModel.GetPromotionSquares();
@@ -58,21 +60,23 @@ namespace Cecs475.BoardGames.Chess.View
         }
 
 
-        private void Border_MouseUp(object sender, MouseButtonEventArgs e) {
+        private async void Border_MouseUp(object sender, MouseButtonEventArgs e) {
             Border b = sender as Border;
             var square = b.DataContext as ChessSquare;
-            var vm = FindResource("vm") as ChessViewModel;
+            var vm = VIEW_MODEL;
            
             var startPos = square.Position;
             var piece = square.Piece.PieceType;
-            var possMoves = vm.PossibleMoves;
+            var possMoves = vm.PromotionMoves;
+            var endPos = new BoardPosition(-1, (int)piece);
 
             foreach (var move in possMoves)
             {
-                if (move.EndPosition.ToString().Equals(piece.ToString()))
+                if (move.Piece.PieceType.ToString().Equals(piece.ToString()))
                 {
                     b.Background = RED_BRUSH;
-                    vm.ApplyMove(move);
+                    await vm.ApplyMove(new ChessMove(startPos, endPos, ChessMoveType.PawnPromote));
+                    Close();
                 }
             }
         }
@@ -80,13 +84,8 @@ namespace Cecs475.BoardGames.Chess.View
         private void Border_MouseEnter(object sender, MouseEventArgs e) {
             Border b = sender as Border;
             var square = b.DataContext as ChessSquare;
-            var vm = FindResource("vm") as ChessViewModel;
-            foreach (var move in vm.PossibleMoves)
-            {
-                if (square.Position.Equals(move.EndPosition))
-                    b.Background = GREEN_BRUSH;
-
-            }
+            var vm = VIEW_MODEL;
+            b.Background = GREEN_BRUSH;
         }
 
         private void Border_MouseLeave(object sender, MouseEventArgs e) {
