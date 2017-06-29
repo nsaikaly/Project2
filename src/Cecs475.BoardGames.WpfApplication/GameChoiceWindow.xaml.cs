@@ -30,7 +30,11 @@ namespace Cecs475.BoardGames.WpfApplication {
          FileInfo[] dirs = d.GetFiles(); //Getting Text files
 
          foreach (var dir in dirs) {
-               Assembly.LoadFrom(path + "/" + dir.ToString());
+            //Assembly.LoadFrom(path + "/" + dir.ToString());
+            string assemblyName = System.IO.Path.GetFileNameWithoutExtension(dir.ToString());
+            string test = "Cecs475.BoardGames.Chess.Model";
+            Assembly.Load(assemblyName + ", Version=1.0.0.0, Culture=neutral, PublicKeyToken=68e71c13048d452a");
+            //FullName = "Cecs475.BoardGames.Chess.View, Version=1.0.0.0, Culture=neutral, PublicKeyToken=68e71c13048d452a"
          }
 
          var gameTypes = AppDomain.CurrentDomain.GetAssemblies()
