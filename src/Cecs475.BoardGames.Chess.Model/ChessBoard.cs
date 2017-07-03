@@ -447,8 +447,9 @@ namespace Cecs475.BoardGames.Chess {
 
                 case ChessMoveType.PawnPromote:
                     //TODO: DO THIS
-                    //player = (sbyte)player;                    
-                    mBoard[startPosition.Row, startPosition.Col] = (sbyte)(endPosition.Col * player);
+                    //player = (sbyte)player;        
+                    ChessMove lMove = (ChessMove)MoveHistory.Last();
+                    mBoard[lMove.EndPosition.Row, lMove.EndPosition.Col] = (sbyte)(endPosition.Col * GetPlayerAtPosition(lMove.EndPosition));
                     Value += GetPieceValue(GetPieceAtPosition(startPosition).PieceType) * player;
                     Value -= 1 * player;
                     break;
@@ -1231,12 +1232,13 @@ namespace Cecs475.BoardGames.Chess {
                     break;
 
                 case ChessMoveType.PawnPromote:
+                    ChessMove Lmove = (ChessMove)MoveHistory[MoveHistory.Count - 2];
                     player = -1;
                     if (CurrentPlayer == 2)
                         player = 1;
                     Value -= GetPieceValue(GetPieceAtPosition(startPos).PieceType) * player;
                     Value += 1 * player;
-                    mBoard[startPos.Row, startPos.Col] = (sbyte)((int)ChessPieceType.Pawn * player);       
+                    mBoard[Lmove.EndPosition.Row, Lmove.EndPosition.Col] = (sbyte)((int)ChessPieceType.Pawn * player);       
                     break;
 
                 case ChessMoveType.PawnTwoSteps:
