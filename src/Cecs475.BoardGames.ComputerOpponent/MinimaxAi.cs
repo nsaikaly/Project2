@@ -29,16 +29,21 @@ namespace Cecs475.BoardGames.ComputerOpponent {
          // mMaxDepth is what the depthLeft should start at.
          // You are maximizing iff the board's current player is 1.
 
-         var move = FindBestMove(b, mMaxDepth, (b.CurrentPlayer == 1));
+         var move = FindBestMove(b, mMaxDepth, (b.CurrentPlayer == 1), int.MinValue, int.MaxValue);
 
          return move.Move;
       }
 
-      private static MinimaxBestMove FindBestMove(IGameBoard b, int depthLeft, bool maximize) {
+      private static MinimaxBestMove FindBestMove(IGameBoard b, int depthLeft, bool maximize, int alpha, int beta) {
          // Implement the minimax algorithm. 
          // Your first attempt will not use alpha-beta pruning. Once that works, 
          // implement the pruning as discussed in the project notes.
          MinimaxBestMove move = new MinimaxBestMove();
+
+         //alpha = int.MinValue;
+         //beta = int.MaxValue;
+
+
 
          if (depthLeft == 0 || b.IsFinished) {
             move = new MinimaxBestMove();
@@ -54,24 +59,35 @@ namespace Cecs475.BoardGames.ComputerOpponent {
          
          foreach (var possMove in b.GetPossibleMoves()) {
             b.ApplyMove(possMove);
-            var w = FindBestMove(b, depthLeft - 1, !maximize);
+            MinimaxBestMove w = FindBestMove(b, depthLeft - 1, !maximize, alpha, beta);
             b.UndoLastMove();
 
-            if (maximize && w.Weight > bestWeight) {
+            if (maximize && w.Weight > alpha) {
+               alpha = w.Weight;
+               w.Move = possMove;
                bestWeight = w.Weight;
                bestMove = possMove;
             }
 
-            else if (!maximize && w.Weight < bestWeight) {
+            else if (!maximize && w.Weight < beta) {
+               beta = w.Weight;
+               w.Move = possMove;
                bestWeight = w.Weight;
                bestMove = possMove;
             }
 
-           
+            if (alpha > beta) {
+               w.Weight = alpha;
+               if(maximize)
+                  w.Weight = beta;
+               w.Move = bestMove;
+               return w;
+            }
+
             move.Weight = bestWeight;
             move.Move = bestMove;
 
-            
+
          }
          return move;
 
