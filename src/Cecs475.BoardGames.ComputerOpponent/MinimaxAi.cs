@@ -67,6 +67,9 @@ namespace Cecs475.BoardGames.ComputerOpponent {
                w.Move = possMove;
                bestWeight = w.Weight;
                bestMove = possMove;
+
+               if (alpha >= beta)
+                  return w;
             }
 
             else if (!maximize && w.Weight < beta) {
@@ -74,15 +77,18 @@ namespace Cecs475.BoardGames.ComputerOpponent {
                w.Move = possMove;
                bestWeight = w.Weight;
                bestMove = possMove;
+
+               if (beta <= alpha)
+                  return w;
             }
 
-            if (alpha > beta) {
-               w.Weight = alpha;
-               if(maximize)
-                  w.Weight = beta;
-               w.Move = bestMove;
-               return w;
-            }
+            //if (alpha > beta) {
+            //   w.Weight = alpha;
+            //   if(maximize)
+            //      w.Weight = beta;
+            //   w.Move = bestMove;
+            //   return w;
+            //}
 
             move.Weight = bestWeight;
             move.Move = bestMove;
