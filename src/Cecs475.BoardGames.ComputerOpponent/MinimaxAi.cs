@@ -40,11 +40,7 @@ namespace Cecs475.BoardGames.ComputerOpponent {
          // implement the pruning as discussed in the project notes.
          MinimaxBestMove move = new MinimaxBestMove();
 
-         //alpha = int.MinValue;
-         //beta = int.MaxValue;
-
-
-
+        //tree empty
          if (depthLeft == 0 || b.IsFinished) {
             move = new MinimaxBestMove();
             move.Weight = b.Weight;
@@ -52,6 +48,7 @@ namespace Cecs475.BoardGames.ComputerOpponent {
             return move;
          }
 
+         //initializaitons
          int bestWeight = int.MaxValue;
          IGameMove bestMove = null;
          if (maximize)
@@ -61,14 +58,17 @@ namespace Cecs475.BoardGames.ComputerOpponent {
 
          foreach (var possMove in possMoves) {
             b.ApplyMove(possMove);
+            //return best move
             MinimaxBestMove w = FindBestMove(b, depthLeft - 1, !maximize, alpha, beta);
             b.UndoLastMove();
 
+            //update alpha
             if (maximize && w.Weight > alpha) {
                alpha = w.Weight;
                bestWeight = w.Weight;
                bestMove = possMove;
 
+               //return if alpha not less than beta
                if (alpha >= beta) { 
                   w.Weight = beta;
                   w.Move = bestMove;
@@ -76,11 +76,13 @@ namespace Cecs475.BoardGames.ComputerOpponent {
                 }
             }
 
+            //update beta
             else if (!maximize && w.Weight < beta) {
                beta = w.Weight;
                bestWeight = w.Weight;
                bestMove = possMove;
 
+               //return if alpha not less than beta
                if (alpha >= beta) {
                   w.Weight = alpha;
                   w.Move = bestMove; 
