@@ -57,38 +57,36 @@ namespace Cecs475.BoardGames.ComputerOpponent {
          if (maximize)
             bestWeight *= -1;
          
-         foreach (var possMove in b.GetPossibleMoves()) {
+         var possMoves = b.GetPossibleMoves();
+
+         foreach (var possMove in possMoves) {
             b.ApplyMove(possMove);
             MinimaxBestMove w = FindBestMove(b, depthLeft - 1, !maximize, alpha, beta);
             b.UndoLastMove();
 
             if (maximize && w.Weight > alpha) {
                alpha = w.Weight;
-               w.Move = possMove;
                bestWeight = w.Weight;
                bestMove = possMove;
 
-               if (alpha >= beta)
+               if (alpha >= beta) { 
+                  w.Weight = beta;
+                  w.Move = bestMove;
                   return w;
+                }
             }
 
             else if (!maximize && w.Weight < beta) {
                beta = w.Weight;
-               w.Move = possMove;
                bestWeight = w.Weight;
                bestMove = possMove;
 
-               if (beta <= alpha)
+               if (alpha >= beta) {
+                  w.Weight = alpha;
+                  w.Move = bestMove; 
                   return w;
+               }
             }
-
-            //if (alpha > beta) {
-            //   w.Weight = alpha;
-            //   if(maximize)
-            //      w.Weight = beta;
-            //   w.Move = bestMove;
-            //   return w;
-            //}
 
             move.Weight = bestWeight;
             move.Move = bestMove;

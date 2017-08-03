@@ -181,7 +181,6 @@ namespace Cecs475.BoardGames.Chess.View {
             else
             {
 
-
                if (cMove.MoveType == ChessMoveType.PawnPromote) {
                   IsPawnPromotion = true;
                }
@@ -199,15 +198,14 @@ namespace Cecs475.BoardGames.Chess.View {
                   if (move.Equals(cMove))
                   {
                      mBoard.ApplyMove(move);
-                     RebindState();
                      break;
                   }                  
                }
 
-              
-               CheckPromotionMoves();
+                RebindState();
+                //CheckPromotionMoves();
 
-               if (Players == NumberOfPlayers.One && !mBoard.IsFinished) {
+                if (Players == NumberOfPlayers.One && !mBoard.IsFinished && mBoard.CurrentPlayer == 2) {
 
                   var bestMove = await Task.Run(() => mGameAi.FindBestMove(mBoard));
                   if (bestMove != null) {
